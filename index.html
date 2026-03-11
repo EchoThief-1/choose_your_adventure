@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Chronicles</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Orbitron:wght@400;700&family=Philosopher:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SHARED BASE
+============================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  overflow-x: hidden;
+  transition: background 1.5s ease, color 0.8s;
+}
+
+body.theme-dungeon {
+  background: #1a1008;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(60,30,5,0.8) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(80,40,5,0.6) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(30,15,3,0.9) 0%, transparent 70%);
+  color: #d4c4a0;
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 1.2rem;
+}
+body.theme-scifi {
+  background: #020a1a;
+  background-image:
+    radial-gradient(ellipse at 30% 40%, rgba(0,80,120,0.5) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(0,40,80,0.4) 0%, transparent 50%);
+  color: #c0dde8;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.85rem;
+}
+body.theme-dino {
+  background: #071208;
+  background-image:
+    radial-gradient(ellipse at 20% 60%, rgba(10,50,10,0.8) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 30%, rgba(20,60,10,0.5) 0%, transparent 50%);
+  color: #c8d8b0;
+  font-family: 'Philosopher', serif;
+  font-size: 1.2rem;
+}
+
+/* ============================================================
+   PARTICLES
+============================================================ */
+.particles {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; z-index: 0; overflow: hidden;
+}
+.particle {
+  position: absolute; border-radius: 50%;
+  opacity: 0; animation: float-up linear infinite;
+}
+@keyframes float-up {
+  0%   { opacity: 0; transform: translateY(100vh) translateX(0); }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.2; }
+  100% { opacity: 0; transform: translateY(-10vh) translateX(30px); }
+}
+.particle.streak {
+  border-radius: 0; animation: streak linear infinite;
+}
+@keyframes streak {
+  0%   { opacity: 0; transform: translateX(-10vw); }
+  10%  { opacity: 0.5; }
+  90%  { opacity: 0.1; }
+  100% { opacity: 0; transform: translateX(110vw); }
+}
+
+/* ============================================================
+   HEADER
+============================================================ */
+header {
+  position: relative; z-index: 1;
+  text-align: center; padding: 3rem 2rem 1.5rem; width: 100%;
+}
+.title {
+  font-size: clamp(1.6rem, 5vw, 3rem);
+  letter-spacing: 0.05em; line-height: 1.2;
+}
+body.theme-dungeon .title {
+  font-family: 'Cinzel Decorative', serif; color: #f0c060;
+  text-shadow: 0 0 30px rgba(201,146,42,0.8), 0 0 60px rgba(201,146,42,0.4), 0 2px 4px rgba(0,0,0,0.8);
+}
+body.theme-scifi .title {
+  font-family: 'Orbitron', monospace; color: #80eeff;
+  text-shadow: 0 0 20px rgba(0,200,255,0.9), 0 0 50px rgba(0,200,255,0.4);
+  font-size: clamp(1rem, 3.5vw, 2rem); letter-spacing: 0.15em;
+}
+body.theme-dino .title {
+  font-family: 'Philosopher', serif; color: #a5d6a7;
+  text-shadow: 0 0 25px rgba(76,175,80,0.7), 0 0 50px rgba(76,175,80,0.3);
+}
+.subtitle {
+  margin-top: 0.5rem; font-style: italic; font-size: 0.95rem;
+  letter-spacing: 0.15em; text-transform: uppercase;
+}
+body.theme-dungeon .subtitle { color: #8a7a6a; font-family: 'Crimson Text', serif; }
+body.theme-scifi .subtitle { color: #3a6a7a; font-family: 'Orbitron', monospace; font-size: 0.6rem; }
+body.theme-dino .subtitle { color: #4a6a4a; font-family: 'Philosopher', serif; }
+
+.divider { width: 200px; height: 1px; margin: 1rem auto; position: relative; }
+body.theme-dungeon .divider { background: linear-gradient(90deg, transparent, #c9922a, transparent); }
+body.theme-scifi .divider  { background: linear-gradient(90deg, transparent, #00c8ff, transparent); }
+body.theme-dino .divider   { background: linear-gradient(90deg, transparent, #4caf50, transparent); }
+.divider::before {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.9rem; padding: 0 0.5rem;
+}
+body.theme-dungeon .divider::before { content: '⚔'; color: #c9922a; background: #1a1008; }
+body.theme-scifi .divider::before   { content: '✦'; color: #00c8ff; background: #020a1a; }
+body.theme-dino .divider::before    { content: '🌿'; color: #4caf50; background: #071208; font-size: 0.7rem; }
+
+/* ============================================================
+   STAGE
+============================================================ */
+.stage {
+  position: relative; z-index: 1;
+  width: min(780px, 92vw);
+  border-radius: 4px; padding: 2.5rem; margin-bottom: 2rem;
+}
+body.theme-dungeon .stage {
+  background: linear-gradient(160deg, #211508, #180f05);
+  border: 1px solid rgba(201,146,42,0.3);
+  box-shadow: 0 0 60px rgba(201,146,42,0.08), inset 0 0 40px rgba(0,0,0,0.5), 0 20px 60px rgba(0,0,0,0.6);
+}
+body.theme-scifi .stage {
+  background: linear-gradient(160deg, #041525, #020d1a);
+  border: 1px solid rgba(0,200,255,0.2);
+  box-shadow: 0 0 60px rgba(0,200,255,0.05), inset 0 0 40px rgba(0,0,0,0.5), 0 20px 60px rgba(0,0,0,0.6);
+}
+body.theme-dino .stage {
+  background: linear-gradient(160deg, #0c1f0a, #071208);
+  border: 1px solid rgba(76,175,80,0.2);
+  box-shadow: 0 0 60px rgba(76,175,80,0.05), inset 0 0 40px rgba(0,0,0,0.5), 0 20px 60px rgba(0,0,0,0.6);
+}
+.stage::before {
+  content: ''; position: absolute; inset: 6px;
+  border-radius: 2px; pointer-events: none;
+}
+body.theme-dungeon .stage::before { border: 1px solid rgba(201,146,42,0.1); }
+body.theme-scifi .stage::before   { border: 1px solid rgba(0,200,255,0.06); }
+body.theme-dino .stage::before    { border: 1px solid rgba(76,175,80,0.06); }
+
+/* ============================================================
+   STAT BAR
+============================================================ */
+.stat-bar {
+  display: none; gap: 1.5rem; flex-wrap: wrap;
+  padding: 0.6rem 1rem; border-radius: 3px; margin-bottom: 1.2rem;
+  font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.stat-bar.visible { display: flex; }
+body.theme-scifi .stat-bar { background: rgba(0,200,255,0.04); border: 1px solid rgba(0,200,255,0.15); font-family: 'Orbitron', monospace; color: #00c8ff; }
+body.theme-dino .stat-bar  { background: rgba(76,175,80,0.04); border: 1px solid rgba(76,175,80,0.15); font-family: 'Philosopher', serif; color: #4caf50; font-size: 0.9rem; }
+body.theme-scifi .stat-bar strong { color: #80eeff; }
+body.theme-dino .stat-bar strong  { color: #a5d6a7; }
+
+/* ============================================================
+   STORY TEXT
+============================================================ */
+#story-text { line-height: 1.9; min-height: 120px; position: relative; }
+body.theme-dungeon #story-text { color: #c8b898; font-family: 'Crimson Text', serif; font-size: 1.15rem; }
+body.theme-scifi #story-text   { color: #a0ccd8; font-family: 'Orbitron', monospace; font-size: 0.78rem; line-height: 2.1; }
+body.theme-dino #story-text    { color: #b8cc98; font-family: 'Philosopher', serif; font-size: 1.1rem; }
+
+.story-segment { animation: fade-in 0.8s ease forwards; }
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   SPEAKING BAR
+============================================================ */
+.speaking-bar {
+  display: flex; align-items: center; gap: 0.6rem;
+  margin-top: 1.5rem; opacity: 0; transition: opacity 0.4s;
+}
+.speaking-bar.active { opacity: 1; }
+.bar-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; }
+body.theme-dungeon .bar-label { color: #8a7a6a; font-family: 'Crimson Text', serif; }
+body.theme-scifi .bar-label   { color: #3a6a7a; font-family: 'Orbitron', monospace; font-size: 0.55rem; }
+body.theme-dino .bar-label    { color: #4a6a4a; }
+.wave { display: flex; gap: 3px; align-items: flex-end; height: 20px; }
+.wave span { display: block; width: 3px; border-radius: 2px; animation: wave-bounce 0.8s ease-in-out infinite; }
+body.theme-dungeon .wave span { background: #c9922a; }
+body.theme-scifi .wave span   { background: #00c8ff; }
+body.theme-dino .wave span    { background: #4caf50; }
+.wave span:nth-child(1) { animation-delay: 0s; }
+.wave span:nth-child(2) { animation-delay: 0.1s; }
+.wave span:nth-child(3) { animation-delay: 0.2s; }
+.wave span:nth-child(4) { animation-delay: 0.3s; }
+.wave span:nth-child(5) { animation-delay: 0.2s; }
+@keyframes wave-bounce {
+  0%, 100% { height: 4px; }
+  50%       { height: 18px; }
+}
+
+/* ============================================================
+   CONTROLS & BUTTONS
+============================================================ */
+.controls {
+  display: flex; gap: 1rem; margin-top: 2rem;
+  justify-content: center; flex-wrap: wrap;
+}
+.btn {
+  letter-spacing: 0.1em; padding: 0.7rem 1.8rem;
+  cursor: pointer; border-radius: 2px;
+  transition: all 0.25s; text-transform: uppercase;
+  position: relative; overflow: hidden; background: transparent;
+}
+body.theme-dungeon .btn { font-family: 'Cinzel Decorative', serif; font-size: 0.75rem; border: 1px solid #c9922a; color: #f0c060; }
+body.theme-scifi .btn   { font-family: 'Orbitron', monospace; font-size: 0.58rem; border: 1px solid #00c8ff; color: #80eeff; }
+body.theme-dino .btn    { font-family: 'Philosopher', serif; font-size: 0.85rem; border: 1px solid #4caf50; color: #a5d6a7; }
+.btn::before { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.25s; }
+body.theme-dungeon .btn::before { background: #c9922a; }
+body.theme-scifi .btn::before   { background: #00c8ff; }
+body.theme-dino .btn::before    { background: #4caf50; }
+.btn:hover::before { opacity: 0.15; }
+.btn:active { transform: scale(0.97); }
+body.theme-dungeon .btn.primary { background: linear-gradient(135deg, #8a5a10, #c9922a); border-color: #f0c060; color: #fff8e8; }
+body.theme-scifi .btn.primary   { background: linear-gradient(135deg, #003850, #006d8f); border-color: #80eeff; color: #e0f8ff; }
+body.theme-dino .btn.primary    { background: linear-gradient(135deg, #1a4a1a, #2d7a30); border-color: #a5d6a7; color: #e0f0e0; }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.go-back-btn { font-size: 0.7rem; padding: 0.5rem 1.2rem; }
+body.theme-dungeon .go-back-btn { border-color: rgba(201,146,42,0.4); color: #8a7a6a; }
+body.theme-scifi .go-back-btn   { border-color: rgba(0,200,255,0.3); color: #3a6a7a; }
+body.theme-dino .go-back-btn    { border-color: rgba(76,175,80,0.3); color: #4a6a4a; }
+.go-back-btn:disabled { display: none; }
+
+/* ============================================================
+   PROGRESS PIPS
+============================================================ */
+.progress-track { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; }
+.pip { width: 8px; height: 8px; border-radius: 50%; background: transparent; transition: background 0.4s; }
+body.theme-dungeon .pip { border: 1px solid #c9922a; }
+body.theme-scifi .pip   { border: 1px solid #00c8ff; }
+body.theme-dino .pip    { border: 1px solid #4caf50; }
+body.theme-dungeon .pip.visited { background: #c9922a; }
+body.theme-scifi .pip.visited   { background: #00c8ff; }
+body.theme-dino .pip.visited    { background: #4caf50; }
+body.theme-dungeon .pip.current { background: #f0c060; box-shadow: 0 0 8px #c9922a; }
+body.theme-scifi .pip.current   { background: #80eeff; box-shadow: 0 0 8px #00c8ff; }
+body.theme-dino .pip.current    { background: #a5d6a7; box-shadow: 0 0 8px #4caf50; }
+
+/* ============================================================
+   CHOICE MODAL
+============================================================ */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(3,2,1,0.88);
+  backdrop-filter: blur(4px); z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s;
+}
+.modal-backdrop.open { opacity: 1; pointer-events: all; }
+.modal {
+  border-radius: 4px; width: min(520px, 90vw); padding: 2.5rem;
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+body.theme-dungeon .modal { background: linear-gradient(160deg, #221508, #150d04); border: 1px solid #c9922a; box-shadow: 0 0 80px rgba(201,146,42,0.2), inset 0 0 30px rgba(0,0,0,0.4); }
+body.theme-scifi .modal   { background: linear-gradient(160deg, #031828, #020d1a); border: 1px solid #00c8ff; box-shadow: 0 0 80px rgba(0,200,255,0.15), inset 0 0 30px rgba(0,0,0,0.4); }
+body.theme-dino .modal    { background: linear-gradient(160deg, #0a1f08, #071208); border: 1px solid #4caf50; box-shadow: 0 0 80px rgba(76,175,80,0.15), inset 0 0 30px rgba(0,0,0,0.4); }
+.modal::before { content: ''; position: absolute; inset: 5px; border-radius: 2px; pointer-events: none; }
+body.theme-dungeon .modal::before { border: 1px solid rgba(201,146,42,0.12); }
+body.theme-scifi .modal::before   { border: 1px solid rgba(0,200,255,0.08); }
+body.theme-dino .modal::before    { border: 1px solid rgba(76,175,80,0.08); }
+.modal-backdrop.open .modal { transform: translateY(0) scale(1); }
+
+.modal-icon { text-align: center; font-size: 2.5rem; margin-bottom: 0.5rem; }
+.modal-title { font-size: 0.8rem; text-align: center; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.3rem; }
+body.theme-dungeon .modal-title { font-family: 'Cinzel Decorative', serif; color: #c9922a; }
+body.theme-scifi .modal-title   { font-family: 'Orbitron', monospace; color: #00c8ff; font-size: 0.58rem; }
+body.theme-dino .modal-title    { font-family: 'Philosopher', serif; color: #4caf50; }
+.modal-prompt { text-align: center; font-style: italic; font-size: 1rem; margin-bottom: 1.8rem; line-height: 1.5; }
+body.theme-dungeon .modal-prompt { color: #8a7a6a; font-family: 'Crimson Text', serif; }
+body.theme-scifi .modal-prompt   { color: #3a6a7a; font-family: 'Orbitron', monospace; font-size: 0.65rem; }
+body.theme-dino .modal-prompt    { color: #4a6a4a; font-family: 'Philosopher', serif; }
+
+.choices { display: flex; flex-direction: column; gap: 0.75rem; }
+.choice-btn {
+  font-size: 1.05rem; padding: 1rem 1.4rem;
+  text-align: left; cursor: pointer; border-radius: 3px;
+  transition: all 0.2s; line-height: 1.4;
+  position: relative; overflow: hidden;
+}
+body.theme-dungeon .choice-btn { background: linear-gradient(135deg,rgba(201,146,42,0.05),rgba(201,146,42,0.1)); border: 1px solid rgba(201,146,42,0.35); color: #d4c4a0; font-family: 'Crimson Text', serif; }
+body.theme-scifi .choice-btn   { background: linear-gradient(135deg,rgba(0,200,255,0.04),rgba(0,200,255,0.09)); border: 1px solid rgba(0,200,255,0.3); color: #a0ccd8; font-family: 'Orbitron', monospace; font-size: 0.68rem; }
+body.theme-dino .choice-btn    { background: linear-gradient(135deg,rgba(76,175,80,0.05),rgba(76,175,80,0.1)); border: 1px solid rgba(76,175,80,0.3); color: #c8d8b0; font-family: 'Philosopher', serif; }
+.choice-btn::before { content: '▶'; position: absolute; left: -20px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; transition: left 0.2s; }
+body.theme-dungeon .choice-btn::before { color: #c9922a; }
+body.theme-scifi .choice-btn::before   { color: #00c8ff; }
+body.theme-dino .choice-btn::before    { color: #4caf50; }
+.choice-btn:hover { padding-left: 2rem; }
+.choice-btn:hover::before { left: 0.7rem; }
+body.theme-dungeon .choice-btn:hover { border-color: #c9922a; color: #f0c060; background: linear-gradient(135deg,rgba(201,146,42,0.12),rgba(201,146,42,0.2)); box-shadow: 0 0 20px rgba(201,146,42,0.15); }
+body.theme-scifi .choice-btn:hover   { border-color: #00c8ff; color: #80eeff; background: linear-gradient(135deg,rgba(0,200,255,0.1),rgba(0,200,255,0.18)); box-shadow: 0 0 20px rgba(0,200,255,0.12); }
+body.theme-dino .choice-btn:hover    { border-color: #4caf50; color: #a5d6a7; background: linear-gradient(135deg,rgba(76,175,80,0.1),rgba(76,175,80,0.18)); box-shadow: 0 0 20px rgba(76,175,80,0.12); }
+
+/* ============================================================
+   ENDING SCREEN
+============================================================ */
+.ending-screen { display: none; text-align: center; padding: 1rem 0; animation: fade-in 1s ease; }
+.ending-screen.show { display: block; }
+.ending-badge { font-size: 3rem; margin-bottom: 1rem; filter: drop-shadow(0 0 15px rgba(200,200,200,0.6)); }
+.ending-title { font-size: 1.4rem; margin-bottom: 1rem; }
+body.theme-dungeon .ending-title { font-family: 'Cinzel Decorative', serif; color: #f0c060; text-shadow: 0 0 20px rgba(201,146,42,0.5); }
+body.theme-scifi .ending-title   { font-family: 'Orbitron', monospace; color: #80eeff; text-shadow: 0 0 20px rgba(0,200,255,0.5); font-size: 1rem; }
+body.theme-dino .ending-title    { font-family: 'Philosopher', serif; color: #a5d6a7; text-shadow: 0 0 20px rgba(76,175,80,0.5); }
+
+/* ============================================================
+   WORMHOLE / BOOK SELECT SCREEN
+============================================================ */
+.wormhole-screen { display: none; text-align: center; padding: 1rem 0; animation: fade-in 1.2s ease; }
+.wormhole-screen.show { display: block; }
+.wormhole-vfx {
+  font-size: 4rem; animation: spin-pulse 2.5s ease-in-out infinite;
+  display: block; margin: 1rem auto;
+  filter: drop-shadow(0 0 20px rgba(180,100,255,0.8));
+}
+@keyframes spin-pulse {
+  0%,100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 20px rgba(180,100,255,0.8)); }
+  50%      { transform: scale(1.25) rotate(180deg); filter: drop-shadow(0 0 50px rgba(220,160,255,1)); }
+}
+.wormhole-narration {
+  font-family: 'Crimson Text', serif;
+  font-style: italic; font-size: 1.1rem; line-height: 1.9;
+  color: #c8b0f0; margin: 1.2rem 0;
+  max-width: 580px; margin-left: auto; margin-right: auto;
+}
+.treasure-tag {
+  display: inline-block; padding: 0.4rem 1.4rem;
+  border-radius: 20px; font-size: 0.9rem; margin: 0.8rem 0;
+  font-family: 'Cinzel Decorative', serif; letter-spacing: 0.05em;
+  background: rgba(120,80,200,0.15);
+  border: 1px solid rgba(180,120,255,0.4); color: #d4b0ff;
+}
+.book-select-title {
+  font-family: 'Cinzel Decorative', serif; font-size: 1rem;
+  color: #d4b0ff; letter-spacing: 0.15em; text-transform: uppercase;
+  margin: 2rem 0 1.5rem;
+  text-shadow: 0 0 15px rgba(180,100,255,0.6);
+}
+.book-cards { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+.book-card {
+  width: min(220px, 42vw); border-radius: 6px; padding: 1.8rem 1.2rem;
+  cursor: pointer; transition: all 0.3s; text-align: center;
+  position: relative; overflow: hidden;
+}
+.book-card-scifi {
+  background: linear-gradient(160deg, #021828, #010d18);
+  border: 1px solid rgba(0,200,255,0.35);
+}
+.book-card-dino {
+  background: linear-gradient(160deg, #091a07, #051008);
+  border: 1px solid rgba(76,175,80,0.35);
+}
+.book-card:hover { transform: translateY(-5px); }
+.book-card-scifi:hover { box-shadow: 0 0 40px rgba(0,200,255,0.25); border-color: rgba(0,200,255,0.8); }
+.book-card-dino:hover  { box-shadow: 0 0 40px rgba(76,175,80,0.25); border-color: rgba(76,175,80,0.8); }
+.book-card-icon { font-size: 2.8rem; margin-bottom: 0.8rem; display: block; }
+.book-card-title { font-weight: 700; margin-bottom: 0.6rem; line-height: 1.3; }
+.book-card-scifi .book-card-title { font-family: 'Orbitron', monospace; color: #80eeff; font-size: 0.62rem; }
+.book-card-dino .book-card-title  { font-family: 'Philosopher', serif; color: #a5d6a7; font-size: 1rem; }
+.book-card-teaser { font-style: italic; line-height: 1.5; }
+.book-card-scifi .book-card-teaser { color: #3a6a7a; font-family: 'Orbitron', monospace; font-size: 0.58rem; }
+.book-card-dino .book-card-teaser  { color: #4a6a4a; font-family: 'Philosopher', serif; font-size: 0.88rem; }
+</style>
+</head>
+<body class="theme-dungeon">
+
+<div class="particles" id="particles"></div>
+
+<header>
+  <div class="title" id="book-title">The Dungeon Below</div>
+  <div class="subtitle" id="book-subtitle">Book I — An Interactive Audio Adventure</div>
+  <div class="divider"></div>
+</header>
+
+<div class="stage">
+
+  <!-- Stat bar (Books 2 & 3) -->
+  <div class="stat-bar" id="stat-bar">
+    <span class="stat-item">💰 Gold: <strong id="stat-gold">0</strong></span>
+    <span class="stat-item" id="stat-extra"></span>
+  </div>
+
+  <!-- Story text -->
+  <div id="story-text">
+    <div class="story-segment" id="current-segment">
+      Press <strong id="begin-label" style="color:#f0c060">Begin Adventure</strong> to start your journey...
+    </div>
+  </div>
+
+  <!-- Narration indicator -->
+  <div class="speaking-bar" id="speaking-bar">
+    <div class="bar-label">Narrating</div>
+    <div class="wave"><span></span><span></span><span></span><span></span><span></span></div>
+  </div>
+
+  <!-- Progress pips -->
+  <div class="progress-track" id="progress-track"></div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn primary" id="start-btn" onclick="beginAdventure()">Begin Adventure</button>
+    <button class="btn" id="replay-btn" onclick="replaySegment()" disabled>🔊 Replay</button>
+    <button class="btn" id="pause-btn" onclick="togglePause()" disabled>⏸ Pause</button>
+    <button class="btn" id="skip-btn" onclick="skipToChoice()" disabled>⏭ Skip</button>
+  </div>
+
+  <!-- Failure ending -->
+  <div class="ending-screen" id="ending-screen">
+    <div class="ending-badge" id="ending-badge"></div>
+    <div class="ending-title" id="ending-title"></div>
+    <p id="ending-desc" style="font-style:italic;opacity:0.65;margin-bottom:1.5rem;line-height:1.7;"></p>
+    <button class="btn primary" onclick="restartGame()">↩ Play Again</button>
+  </div>
+
+  <!-- Success: Wormhole + Book Select -->
+  <div class="wormhole-screen" id="wormhole-screen">
+    <span class="wormhole-vfx">🌀</span>
+    <div class="wormhole-narration" id="wormhole-narration"></div>
+    <div class="treasure-tag" id="treasure-tag"></div>
+
+    <div id="book-select-area">
+      <div class="book-select-title">Choose Your Next Chronicle</div>
+      <div class="book-cards">
+        <div class="book-card book-card-scifi" onclick="startBook('scifi')">
+          <span class="book-card-icon">🚀</span>
+          <div class="book-card-title">BOOK II — VOID FORTUNE</div>
+          <div class="book-card-teaser">The stars are calling. Your treasure buys a ticket off this world — but the cosmos has other plans.</div>
+        </div>
+        <div class="book-card book-card-dino" onclick="startBook('dino')">
+          <span class="book-card-icon">🦕</span>
+          <div class="book-card-title">Book III — Before the World</div>
+          <div class="book-card-teaser">65 million years before humanity. Your gold means nothing here. Survival means everything.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:2rem;">
+      <button class="btn" style="border-color:rgba(180,120,255,0.4);color:#c8a0f0;font-family:'Crimson Text',serif;" onclick="restartGame()">↩ Return to Book I</button>
+    </div>
+  </div>
+
+</div><!-- /stage -->
+
+<!-- Choice Modal -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <div class="modal-icon" id="modal-icon">🗡️</div>
+    <div class="modal-title">A Decision Awaits</div>
+    <div class="modal-prompt" id="modal-prompt">What will you do?</div>
+    <div class="choices" id="choices-container"></div>
+    <div style="text-align:center;margin-top:1.2rem;">
+      <button class="btn go-back-btn" id="go-back-btn" onclick="goBack()">↩ Go Back</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// BOOK 1 — THE DUNGEON BELOW
+// ============================================================
+const book1 = {
+  _meta: { totalSteps: 3, icon: '🗡️' },
+  start: {
+    text: "You stand at the iron gate of the dungeon, torch in hand. The air reeks of sulfur and old bones. Somewhere deep below, a low rumble echoes through the stone. They say a dragon sleeps here and they say it has been sleeping for a hundred years. You have come for its hoard. Three tunnels branch before you: one reeks of water, one smells of smoke... and one smells of nothing at all.",
+    choicePrompt: "Which tunnel do you take?",
+    choices: [
+      { text: "The water tunnel — water means life, and possibly an escape route.", next: "water_tunnel" },
+      { text: "The smoke tunnel — where there is smoke, there is fire... and possibly treasure.", next: "smoke_tunnel" },
+      { text: "The silent tunnel — silence in a dungeon is either very safe, or very dangerous.", next: "silent_tunnel" }
+    ]
+  },
+  water_tunnel: {
+    text: "You follow the water tunnel. The dripping grows louder until you emerge onto a ledge above an underground lake. Bioluminescent mushrooms cast everything in pale blue light. A rickety boat bobs below. On the far shore, you make out the glint of gold... but something large breathes beneath the surface.",
+    choicePrompt: "How do you cross?",
+    choices: [
+      { text: "Take the boat and row hard — speed is your only advantage.", next: "boat_success" },
+      { text: "Throw a rock to distract whatever lurks below, then swim.", next: "lake_monster" }
+    ]
+  },
+  smoke_tunnel: {
+    text: "Heat builds with every step. Charred bones crunch underfoot. You press on and reach a massive cavern where a dragon the size of a cathedral lies coiled around a mountain of gold. Its amber eye is half open. Not quite asleep. Not quite awake.",
+    choicePrompt: "What do you do?",
+    choices: [
+      { text: "Move like a shadow. Creep toward the gold while it dozes.", next: "stealth_attempt" },
+      { text: "Speak to it. Dragons are ancient — maybe it respects boldness.", next: "parley" },
+      { text: "Back away slowly. This is a death trap.", next: "retreat_smoke" }
+    ]
+  },
+  silent_tunnel: {
+    text: "Nothing. No dripping, no skittering. Then your torch finds a dwarf slumped against the wall, armor dented, map clutched to his chest. He is barely breathing. His eyes open and he rasps: The east vault... unlocked... runes on the floor... do not step on the runes. He presses the map into your hand and passes out.",
+    choicePrompt: "What do you do?",
+    choices: [
+      { text: "Follow the map to the east vault immediately.", next: "east_vault" },
+      { text: "Carry the dwarf back to safety first.", next: "save_dwarf" }
+    ]
+  },
+  boat_success: {
+    text: "You row hard. Something bumps the hull — once, twice — then loses interest. You reach the far shore, fill your pack with gold and gemstones, find a hidden passage back to the surface. Hours later you emerge into cold night air, richer than you have ever been, and alive. You are walking the forest road when the ground simply opens beneath your feet. A vortex of light and impossible geometry. The trees, the road, the sky all stretch and snap — and you are somewhere else entirely.",
+    ending: { badge: "⚓", title: "The Lake Runner", desc: "Swift, smart, and lucky. But the universe had other plans.", success: true, gold: 800 }
+  },
+  lake_monster: {
+    text: "The rock splashes. A moment of silence. Then the water erupts. A serpentine neck arches twenty feet into the air. It turns toward the splash... then toward you. The last sound you hear is the dock splintering.",
+    ending: { badge: "💀", title: "Drowned in the Dark", desc: "You woke the wrong beast. The dungeon has claimed another.", success: false, gold: 0 }
+  },
+  stealth_attempt: {
+    text: "You move like smoke, sliding between coins without a clink. Your fingers close around a ruby the size of your fist. Then an exhale. Hot, sulfurous air. The amber eye snaps open. You bolt. The dragon's roar shakes the mountain. You sprint, leap a chasm, and somehow make it out. The ruby is still in your hand. You are laughing, stumbling down the mountain road, when reality hiccups. A circle of purple-white light tears open in the path. You fall through before you can stop — the mountain, the road, the world, gone.",
+    ending: { badge: "💎", title: "Thief of the Deep", desc: "You stole from a dragon and lived. Then something stole you.", success: true, gold: 1200 }
+  },
+  parley: {
+    text: "You plant your torch and speak into the dark: Ancient one. I come not to steal, but to offer trade. My stories for your gold. The amber eye opens fully. A voice like grinding boulders: Stories... The dragon uncurls. Two hours later you walk out with more gold than you can carry, bound by a promise to return each year with tales from the surface world. You and the dragon part as equals. Outside, the mountain air is crisp. You are grinning at the stars when a wormhole, shimmering and impossible, opens directly in front of you and swallows you whole.",
+    ending: { badge: "🐉", title: "The Dragon's Bard", desc: "You charmed a dragon. Then the cosmos intervened.", success: true, gold: 2000 }
+  },
+  retreat_smoke: {
+    text: "You back away carefully, step by careful step. Smart. Three other adventurers were not. You return to the surface empty-handed but breathing. There is always tomorrow.",
+    ending: { badge: "🛡️", title: "The Living Coward", desc: "Discretion is the better part of valor. You will return stronger.", success: false, gold: 0 }
+  },
+  east_vault: {
+    text: "The map leads to a heavy iron door, already ajar. Inside: artifacts, coins, weapons. You step carefully around every glowing rune. Every step deliberate. You fill your pack and leave without triggering a single trap. Halfway down the mountain, counting coins in moonlight, the road bends into something it should not be — a spiral of blinding light. You fall in before you understand what is happening.",
+    ending: { badge: "🗝️", title: "The Careful Thief", desc: "Knowledge and patience made you rich. Then gravity got weird.", success: true, gold: 1500 }
+  },
+  save_dwarf: {
+    text: "You carry the dwarf out over your shoulder. Outside, he regains consciousness and stares at you. You saved me. You could have just taken the map. A long pause. Then: The vault empties on the new moon. Three days. We split it even. Three days later you walk out with more gold than your pack can hold. That night, camped on the mountainside, a vertical ring of starlight appears in the darkness — and pulls you through before you can speak.",
+    ending: { badge: "🤝", title: "The Honorable Adventurer", desc: "Honor made you rich. The wormhole found you anyway.", success: true, gold: 1800 }
+  }
+};
+
+// ============================================================
+// BOOK 2 — VOID FORTUNE (Sci-Fi)
+// ============================================================
+const book2 = {
+  _meta: { totalSteps: 3, icon: '🚀' },
+  start: {
+    text: "The wormhole releases you onto a chrome platform orbiting a gas giant the color of a bruise. Around you: a bustling space station. Merchants, smugglers, a dozen alien species. A holographic sign reads: GATEWAY STATION DELTA. Somehow, impossibly, your treasure came with you. A grizzled dockmaster eyes your gold-stuffed pack and whistles low. Three opportunities materialize immediately.",
+    choicePrompt: "What is your move?",
+    choices: [
+      { text: "Spend 500 gold upgrading at the black market armory. Knowledge is survival.", next: "buy_gear", cost: 500 },
+      { text: "Book cheap passage on a cargo freighter to the Kepler Colonies. Lay low.", next: "freighter" },
+      { text: "Bribe the dockmaster for intel on the station's biggest score.", next: "bribe_dock", cost: 300 }
+    ]
+  },
+  buy_gear: {
+    text: "The armory is run by a four-armed Veth trader who accepts your medieval gold with amused curiosity. You walk out with a plasma cutter, light-bending cloak, and a neural scanner that reads biosignatures within fifty meters. You are testing the scanner near the docking bay when the emergency klaxon blares. Red light floods every corridor. An automated voice announces: CONTAINMENT BREACH, LEVEL SEVEN. Something large just got loose.",
+    choicePrompt: "What do you do?",
+    choices: [
+      { text: "Use the neural scanner to track the creature. Bounties in this galaxy must be enormous.", next: "hunt_creature" },
+      { text: "Use the cloak and slip to the escape pods immediately.", next: "escape_pod_success" }
+    ]
+  },
+  freighter: {
+    text: "The cargo freighter Pale Meridian departs on schedule. Three days in the hold between protein crates and mining drones. On day four, an asteroid field tears through the shields. Hull breach alarms scream. The captain broadcasts: two escape pods remain. There are seven crew and you. Everyone is running.",
+    choicePrompt: "How do you survive?",
+    choices: [
+      { text: "Bribe two crew members with 600 gold to get a pod seat.", next: "freighter_bribe", cost: 600 },
+      { text: "Help the engineer patch the breach. Your dungeon instincts in tight spaces might actually be useful.", next: "hull_repair" }
+    ]
+  },
+  bribe_dock: {
+    text: "The dockmaster pockets your gold and leans in. Vault Seven. Station treasury. Automated guards only, night cycle, access code rotates every six hours. Next rotation in forty minutes. He slides you a data chip. This is either the greatest opportunity you have ever had... or the most obvious trap in the galaxy.",
+    choicePrompt: "Do you take the risk?",
+    choices: [
+      { text: "Go for Vault Seven. You robbed a dragon. How hard can a space treasury be?", next: "vault_seven_success" },
+      { text: "Too easy. Sell the data chip to someone else instead.", next: "sell_intel" }
+    ]
+  },
+  hunt_creature: {
+    text: "Your scanner tracks a biosignature the size of a ground vehicle moving fast through Level Four. You follow. The creature — a Keth-class apex predator, something like a lion crossed with a deep-sea fish — rounds a corner and stops. It looks at you. You look at it. The bounty would have been extraordinary.",
+    ending: { badge: "💀", title: "Hunter Becomes Hunted", desc: "The Keth-class predator was faster. The station found pieces of you on Level Six.", success: false, gold: 0 }
+  },
+  escape_pod_success: {
+    text: "Your cloak shimmers as you glide past panicking crew into the last escape pod. Hatch seals. Pod fires. Through the porthole you watch the station detonate in a cascade of blue-white light. The autopilot locks onto a nearby colony world. Three days later you land in New Carthage — wealthy, alive, and carrying a story no one will believe.",
+    ending: { badge: "🛸", title: "Ghost of the Station", desc: "Every gold coin spent on that cloak paid off a hundredfold.", success: true, gold: 0 }
+  },
+  freighter_bribe: {
+    text: "Two engineers pocket your gold and bump you to the pod queue. The pod ejects clean. You watch the Pale Meridian break apart in the asteroid field, sick with guilt but breathing. A survey vessel hauls you aboard three days later. The captain, eyeing your remaining gold, offers you a berth all the way to Kepler Prime.",
+    ending: { badge: "🌌", title: "Survivor of the Pale Meridian", desc: "Gold bought your life. Worth every coin.", success: true, gold: 0 }
+  },
+  hull_repair: {
+    text: "Your dungeon instincts — moving in tight dark spaces, improvising under pressure — prove exactly right. You and the engineer seal the breach. The ship stabilizes. The captain shakes your hand. You just saved eleven lives. The crew treats you as one of their own all the way to Kepler Prime, where you arrive with gold intact and a debt owed by a whole crew.",
+    ending: { badge: "⚙️", title: "The Dungeon-Bred Engineer", desc: "Skills transfer across dimensions, apparently.", success: true, gold: 500 }
+  },
+  vault_seven_success: {
+    text: "The vault is exactly where the dockmaster said. The code works. Inside: compressed-matter ingots worth a small planet. You load your pack, your pockets, your boots. Back in the corridor, a security drone scans you — pauses — then waves you through. Apparently your wormhole residue scrambles their sensors. You board a shuttle and disappear into the stars, the richest dungeon-crawler in any dimension.",
+    ending: { badge: "🏦", title: "Thief of Two Worlds", desc: "A dragon's hoard and a space vault. Retirement secured.", success: true, gold: 3000 }
+  },
+  sell_intel: {
+    text: "You find two corporate operatives in the station bar and auction the chip to the highest bidder. They pay in universal credits — convertible anywhere in the known galaxy. You walk to the docking bay lighter and richer, board a passenger shuttle to the Outer Ring, and spend the next several months living very well between colony worlds.",
+    ending: { badge: "💳", title: "The Careful Profiteer", desc: "You never take the obvious risk. That is why you always win.", success: true, gold: 800 }
+  }
+};
+
+// ============================================================
+// BOOK 3 — BEFORE THE WORLD (Dinosaur)
+// ============================================================
+const book3 = {
+  _meta: { totalSteps: 3, icon: '🦕' },
+  start: {
+    text: "The wormhole closes behind you like a thunderclap. You are standing in a jungle so dense the sky is barely visible — a cathedral of ferns and cycads fifty meters tall. The air is thick, oxygen-rich, tasting of rain and deep time. A bellow rolls across the canopy. Whatever made that sound is enormous. In your pack: your treasure, and the clothes on your back. A river glints to your left. Rocky high ground rises to your right. Ahead, something moves in the fern shadows.",
+    choicePrompt: "Where do you go?",
+    choices: [
+      { text: "Head for the river — water is a path through the jungle, and possibly salvation.", next: "river_path" },
+      { text: "Climb the escarpment for high ground and a view of what you are dealing with.", next: "escarpment" },
+      { text: "Hold perfectly still. Whatever is in those ferns does not know you are here yet.", next: "fern_wait" }
+    ]
+  },
+  river_path: {
+    text: "You reach the river — wide, amber, fast. A herd of enormous duck-billed hadrosaurs stands in the shallows drinking. Peaceful, ignoring you. Then the river erupts upstream. A crocodilian the length of a school bus launches itself at the herd. In the chaos it has not noticed you — but your only ford is now occupied.",
+    choicePrompt: "How do you cross?",
+    choices: [
+      { text: "Wait for the predator to finish and move on. Patience is free.", next: "wait_cross" },
+      { text: "Scatter gold coins into the shallows to create noise and lure the herd downstream.", next: "gold_distract", cost: 200 }
+    ]
+  },
+  escarpment: {
+    text: "You scramble up the rock face and reach the top. The view is staggering: a vast valley, the river, open plains, a forest — and a cave mouth in the cliff face beside you. But the real discovery is smoke. A thin column rising from the far tree line. Something is making fire in a world that should have no fire-makers.",
+    choicePrompt: "What do you investigate?",
+    choices: [
+      { text: "Head toward the smoke. Something intelligent might be making it.", next: "smoke_source" },
+      { text: "Explore the cave first. You need a safe base before going anywhere.", next: "cave_shelter" }
+    ]
+  },
+  fern_wait: {
+    text: "You freeze. The ferns part. A juvenile Parasaurolophus — the size of a large horse — pads past you, close enough to touch. It sniffs the air, looks directly at you with one amber eye, then wanders off. Your heart is hammering. It left a trail of bent ferns heading deeper into the jungle. A herbivore's path means a safe path.",
+    choicePrompt: "Do you follow it?",
+    choices: [
+      { text: "Follow the Parasaurolophus. Herbivores know where the predators are not.", next: "follow_dino" },
+      { text: "Head uphill instead, away from wherever the herd is going.", next: "go_uphill" }
+    ]
+  },
+  wait_cross: {
+    text: "Two hours in the undergrowth, barely breathing, as the predator feeds. Finally it drags its kill into deeper water. You ford the river in forty seconds. By nightfall you find a rock shelter too small for anything larger than yourself. You crawl inside, exhausted and alive, listening to a world sixty-five million years before anyone named it.",
+    ending: { badge: "🌊", title: "The Patient One", desc: "In a world of monsters, patience is the sharpest weapon.", success: true, gold: 1000 }
+  },
+  gold_distract: {
+    text: "You scatter gold coins into the shallows with a clatter. The hadrosaurs startle downstream — the predator follows its prey. The ford clears in seconds. You cross without getting your knees wet. On the far bank you pause. In this world, gold is worthless. But it just saved your life.",
+    ending: { badge: "💰", title: "The Clever Spender", desc: "In a world with no economy, your gold became bait. You made it work.", success: true, gold: 0 }
+  },
+  smoke_source: {
+    text: "The smoke leads you to something impossible: a small camp, stone tools, a controlled fire, and a figure crouched over it — a human being. They stare at you. You stare at them. They speak in a language you do not recognize, but their face is human and their eyes are kind. They point to the sky, to themselves, to you, then to the horizon. Another wormhole traveler. You are not alone in the deep time.",
+    ending: { badge: "🔥", title: "Not Alone in the Deep Time", desc: "Sixty-five million years ago, two lost travelers found each other.", success: true, gold: 500 }
+  },
+  cave_shelter: {
+    text: "The cave is dry, defensible, and contains the fossilized remains of a creature larger than anything living you have ever seen. On your third day you discover a back passage to a natural spring. You have found yourself a home in the Cretaceous. You set up camp, carve marks into the stone wall to track the days, and begin to learn this world. Perhaps you never leave.",
+    ending: { badge: "🏕️", title: "The Cretaceous Hermit", desc: "You found shelter. Then you found peace. Then you stopped counting the days.", success: true, gold: 1500 }
+  },
+  follow_dino: {
+    text: "The Parasaurolophus leads you, entirely by accident, along safe corridors through the jungle — away from predator ranges, toward water, toward the highlands. On the second evening you stand on a ridge watching three Brachiosaurus move through the valley below in golden light. You have never seen anything more beautiful. Whatever brought you here, in this moment, you are grateful.",
+    ending: { badge: "🦕", title: "The Wanderer's Peace", desc: "You followed something gentle and it led you somewhere magnificent.", success: true, gold: 0 }
+  },
+  go_uphill: {
+    text: "Uphill logic proves fatal. The high ground is nesting territory for a pack of Utahraptors. You do not see them until one is already between you and the tree line. They are fast, intelligent, and hunting cooperatively. The jungle has no mercy for the unprepared.",
+    ending: { badge: "🦴", title: "Bones in the Cretaceous", desc: "Somewhere in the fossil record, a mystery no archaeologist will ever solve.", success: false, gold: 0 }
+  }
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let activeBook    = book1;
+let currentBookId = 'dungeon';
+let currentNode   = null;
+let synth         = window.speechSynthesis;
+let utterance     = null;
+let visitedNodes  = [];
+let isNarrating   = false;
+let isPaused      = false;
+let pendingCallback = null;
+let playerGold    = 0;
+let carryGold     = 0; // gold carried into next book
+
+// ============================================================
+// PARTICLES
+// ============================================================
+function spawnParticles(theme) {
+  const c = document.getElementById('particles');
+  c.innerHTML = '';
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    if (theme === 'scifi') {
+      p.classList.add('streak');
+      p.style.top    = (Math.random() * 100) + 'vh';
+      p.style.left   = '-50px';
+      p.style.width  = (30 + Math.random() * 50) + 'px';
+      p.style.height = '1px';
+      p.style.background = `rgba(0,200,255,${0.3+Math.random()*0.4})`;
+      p.style.animationDuration = (3 + Math.random() * 5) + 's';
+      p.style.animationDelay   = (Math.random() * 8) + 's';
+    } else if (theme === 'dino') {
+      p.style.left   = Math.random() * 100 + 'vw';
+      p.style.width  = p.style.height = (2 + Math.random() * 3) + 'px';
+      p.style.background = `rgba(76,175,80,${0.3+Math.random()*0.5})`;
+      p.style.animationDuration = (6 + Math.random() * 10) + 's';
+      p.style.animationDelay   = (Math.random() * 12) + 's';
+    } else {
+      p.style.left   = Math.random() * 100 + 'vw';
+      p.style.width  = p.style.height = (1 + Math.random() * 2) + 'px';
+      p.style.background = `rgba(201,146,42,${0.4+Math.random()*0.4})`;
+      p.style.animationDuration = (8 + Math.random() * 12) + 's';
+      p.style.animationDelay   = (Math.random() * 15) + 's';
+    }
+    c.appendChild(p);
+  }
+}
+spawnParticles('dungeon');
+
+// ============================================================
+// THEME
+// ============================================================
+function applyTheme(theme) {
+  document.body.className = 'theme-' + theme;
+  spawnParticles(theme);
+
+  const cfg = {
+    dungeon: { title: 'The Dungeon Below',   sub: 'Book I — An Interactive Audio Adventure', icon: '🗡️', labelColor: '#f0c060' },
+    scifi:   { title: 'VOID FORTUNE',         sub: 'Book II — Across The Stars',              icon: '🚀', labelColor: '#80eeff' },
+    dino:    { title: 'Before the World',     sub: 'Book III — The Cretaceous Chronicles',    icon: '🦕', labelColor: '#a5d6a7' }
+  }[theme];
+
+  document.getElementById('book-title').textContent    = cfg.title;
+  document.getElementById('book-subtitle').textContent = cfg.sub;
+  document.getElementById('modal-icon').textContent    = cfg.icon;
+
+  const lbl = document.getElementById('begin-label');
+  if (lbl) lbl.style.color = cfg.labelColor;
+
+  const statBar = document.getElementById('stat-bar');
+  if (theme !== 'dungeon') {
+    statBar.classList.add('visible');
+    refreshStatBar();
+  } else {
+    statBar.classList.remove('visible');
+  }
+}
+
+function refreshStatBar() {
+  document.getElementById('stat-gold').textContent = playerGold.toLocaleString();
+  const extra = document.getElementById('stat-extra');
+  extra.innerHTML = currentBookId === 'scifi' ? '⚡ Gateway Station Delta' : '🌿 Late Cretaceous Era';
+}
+
+// ============================================================
+// CORE ENGINE
+// ============================================================
+function beginAdventure() {
+  document.getElementById('start-btn').disabled = true;
+  document.getElementById('start-btn').style.display = 'none';
+  visitedNodes = [];
+  navigateTo('start');
+}
+
+function navigateTo(nodeId) {
+  currentNode = nodeId;
+  visitedNodes.push(nodeId);
+
+  const node = activeBook[nodeId];
+  if (node.cost) {
+    playerGold = Math.max(0, playerGold - node.cost);
+    refreshStatBar();
+  }
+
+  const seg = document.getElementById('current-segment');
+  seg.style.animation = 'none'; seg.offsetHeight; seg.style.animation = '';
+  seg.className = 'story-segment';
+  seg.innerHTML = node.text.replace(/\n/g, '<br>');
+
+  updateProgress();
+  speakText(node.text.replace(/\n/g, ' '), () => {
+    if (node.ending) {
+      if (node.ending.success) {
+        carryGold = (node.ending.gold || 0) + playerGold;
+        showWormholeScreen(node.ending);
+      } else {
+        showEnding(node.ending);
+      }
+    } else {
+      showChoices(node);
+    }
+  });
+}
+
+function speakText(text, onComplete) {
+  if (utterance) synth.cancel();
+  pendingCallback = onComplete;
+
+  const clean = text.replace(/[""]/g,'"').replace(/['']/g,"'");
+  utterance = new SpeechSynthesisUtterance(clean);
+  utterance.rate  = 0.92;
+  utterance.pitch = currentBookId === 'dino' ? 0.85 : 0.9;
+  utterance.volume = 1;
+
+  const voices = synth.getVoices();
+  const pref = voices.find(v => v.name.includes('Daniel') || v.name.includes('Google UK English Male') || v.name.includes('Arthur') || v.name.includes('Male'));
+  if (pref) utterance.voice = pref;
+
+  const bar      = document.getElementById('speaking-bar');
+  const replayBtn = document.getElementById('replay-btn');
+  const skipBtn  = document.getElementById('skip-btn');
+  const pauseBtn = document.getElementById('pause-btn');
+
+  isNarrating = true; isPaused = false;
+  bar.classList.add('active');
+  replayBtn.disabled = true;
+  pauseBtn.disabled  = false;
+  pauseBtn.textContent = '⏸ Pause';
+  const node = activeBook[currentNode];
+  skipBtn.disabled = !!(node && node.ending);
+
+  const done = () => {
+    isNarrating = false; isPaused = false;
+    bar.classList.remove('active');
+    replayBtn.disabled = false;
+    skipBtn.disabled   = true;
+    pauseBtn.disabled  = true;
+    pauseBtn.textContent = '⏸ Pause';
+    pendingCallback = null;
+    if (onComplete) onComplete();
+  };
+  utterance.onend  = done;
+  utterance.onerror = done;
+  setTimeout(() => synth.speak(utterance), 300);
+}
+
+function replaySegment() {
+  if (!currentNode || isNarrating) return;
+  const node = activeBook[currentNode];
+  speakText(node.text, () => { if (!node.ending) showChoices(node); });
+}
+
+function togglePause() {
+  const pauseBtn = document.getElementById('pause-btn');
+  const bar = document.getElementById('speaking-bar');
+  if (!isPaused) {
+    synth.pause(); isPaused = true;
+    pauseBtn.textContent = '▶ Resume';
+    bar.classList.remove('active');
+  } else {
+    synth.resume(); isPaused = false;
+    pauseBtn.textContent = '⏸ Pause';
+    bar.classList.add('active');
+  }
+}
+
+function skipToChoice() {
+  if (!isNarrating || !pendingCallback) return;
+  synth.cancel();
+  const cb = pendingCallback;
+  pendingCallback = null; isNarrating = false; isPaused = false;
+  document.getElementById('speaking-bar').classList.remove('active');
+  document.getElementById('replay-btn').disabled = false;
+  document.getElementById('skip-btn').disabled   = true;
+  document.getElementById('pause-btn').disabled  = true;
+  document.getElementById('pause-btn').textContent = '⏸ Pause';
+  cb();
+}
+
+function goBack() {
+  if (visitedNodes.length < 2) return;
+  synth.cancel();
+  visitedNodes.pop();
+  const prev = visitedNodes[visitedNodes.length - 1];
+  currentNode = prev;
+  document.getElementById('modal').classList.remove('open');
+  setTimeout(() => {
+    const node = activeBook[prev];
+    const seg = document.getElementById('current-segment');
+    seg.style.animation = 'none'; seg.offsetHeight; seg.style.animation = '';
+    seg.className = 'story-segment';
+    seg.innerHTML = node.text.replace(/\n/g, '<br>');
+    updateProgress();
+    showChoices(node);
+  }, 350);
+}
+
+// ============================================================
+// CHOICES
+// ============================================================
+function showChoices(node) {
+  const modal     = document.getElementById('modal');
+  const prompt    = document.getElementById('modal-prompt');
+  const container = document.getElementById('choices-container');
+  const goBackBtn = document.getElementById('go-back-btn');
+
+  prompt.textContent = node.choicePrompt || "What will you do?";
+  container.innerHTML = '';
+
+  node.choices.forEach((choice, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    let label = choice.text;
+    if (choice.cost) {
+      label += `  [Costs ${choice.cost} gold]`;
+      if (playerGold < choice.cost) { btn.disabled = true; btn.style.opacity = '0.35'; }
+    }
+    btn.textContent = label;
+    btn.style.animationDelay = (i * 0.1) + 's';
+    btn.onclick = () => makeChoice(choice.next);
+    container.appendChild(btn);
+  });
+
+  goBackBtn.disabled = visitedNodes.length <= 1;
+  modal.classList.add('open');
+}
+
+function makeChoice(nextNode) {
+  document.getElementById('modal').classList.remove('open');
+  setTimeout(() => navigateTo(nextNode), 400);
+}
+
+// ============================================================
+// PROGRESS
+// ============================================================
+function updateProgress() {
+  const track = document.getElementById('progress-track');
+  const steps = activeBook._meta.totalSteps;
+  track.innerHTML = '';
+  for (let i = 0; i < steps; i++) {
+    const pip = document.createElement('div');
+    pip.className = 'pip';
+    if (i < visitedNodes.length - 1) pip.classList.add('visited');
+    if (i === visitedNodes.length - 1) pip.classList.add('current');
+    track.appendChild(pip);
+  }
+}
+
+// ============================================================
+// FAILURE ENDING
+// ============================================================
+function showEnding(ending) {
+  synth.cancel(); hideMainUI();
+  const screen = document.getElementById('ending-screen');
+  document.getElementById('ending-badge').textContent = ending.badge;
+  document.getElementById('ending-title').textContent = ending.title;
+  document.getElementById('ending-desc').textContent  = ending.desc;
+  screen.classList.add('show');
+  const u = new SpeechSynthesisUtterance(`Your story ends here. ${ending.title}. ${ending.desc}`);
+  u.rate = 0.85; u.pitch = 0.8;
+  synth.speak(u);
+}
+
+// ============================================================
+// SUCCESS: WORMHOLE SCREEN
+// ============================================================
+const wormholeIntros = {
+  dungeon: (ending) => `${ending.title}. You made it out — treasure in hand${ending.gold >= 1800 ? ', a dragon\u2019s friendship sealed' : ''}. You are walking the road, grinning at the stars, when the ground tears open beneath your feet. A wormhole — violet and white and utterly impossible — swallows you before you can draw breath. Your treasure came with you. Everything else is unknown.`,
+  scifi:   (ending) => `${ending.title}. You made it out of the station alive. Richer, wiser, breathing. The stars stretch out in every direction. The cosmos, it seems, is not finished with you yet.`,
+  dino:    (ending) => `${ending.title}. Against every probability, in a world sixty-five million years before your own, you survived.`
+};
+
+function showWormholeScreen(ending) {
+  synth.cancel(); hideMainUI();
+
+  const narration = wormholeIntros[currentBookId](ending);
+  document.getElementById('wormhole-narration').textContent = narration;
+  document.getElementById('treasure-tag').textContent = `💰 You carry ${carryGold.toLocaleString()} gold into the unknown`;
+
+  // Only show Book Select from Book 1
+  const bookSelectArea = document.getElementById('book-select-area');
+  bookSelectArea.style.display = currentBookId === 'dungeon' ? 'block' : 'none';
+
+  document.getElementById('wormhole-screen').classList.add('show');
+
+  const u = new SpeechSynthesisUtterance(narration);
+  u.rate = 0.87; u.pitch = 0.82;
+  synth.speak(u);
+}
+
+// ============================================================
+// START A NEW BOOK
+// ============================================================
+function startBook(bookId) {
+  synth.cancel();
+  document.getElementById('wormhole-screen').classList.remove('show');
+
+  currentBookId = bookId;
+  activeBook    = bookId === 'scifi' ? book2 : book3;
+  playerGold    = carryGold;
+  visitedNodes  = [];
+  currentNode   = null;
+  pendingCallback = null;
+  isPaused      = false;
+
+  applyTheme(bookId);
+  showMainUI();
+
+  const seg = document.getElementById('current-segment');
+  seg.innerHTML = 'Press <strong id="begin-label">Begin Adventure</strong> to start your journey...';
+  const cfg = { scifi: '#80eeff', dino: '#a5d6a7' };
+  const lbl = document.getElementById('begin-label');
+  if (lbl) lbl.style.color = cfg[bookId];
+
+  document.getElementById('progress-track').innerHTML = '';
+  document.getElementById('start-btn').style.display  = 'inline-block';
+  document.getElementById('start-btn').disabled       = false;
+  document.getElementById('replay-btn').disabled      = true;
+  document.getElementById('skip-btn').disabled        = true;
+  document.getElementById('pause-btn').disabled       = true;
+  document.getElementById('pause-btn').textContent    = '⏸ Pause';
+
+  const intros = { scifi: 'Book Two. Void Fortune. The cosmos awaits.', dino: 'Book Three. Before the World. Sixty five million years ago.' };
+  const u = new SpeechSynthesisUtterance(intros[bookId]);
+  u.rate = 0.83; u.pitch = 0.8;
+  synth.speak(u);
+}
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+function hideMainUI() {
+  ['story-text','speaking-bar','replay-btn','skip-btn','pause-btn','progress-track','stat-bar']
+    .forEach(id => document.getElementById(id).style.display = 'none');
+}
+
+function showMainUI() {
+  document.getElementById('story-text').style.display     = 'block';
+  document.getElementById('speaking-bar').style.display   = 'flex';
+  document.getElementById('replay-btn').style.display     = 'inline-block';
+  document.getElementById('skip-btn').style.display       = 'inline-block';
+  document.getElementById('pause-btn').style.display      = 'inline-block';
+  document.getElementById('progress-track').style.display = 'flex';
+  if (currentBookId !== 'dungeon') {
+    document.getElementById('stat-bar').style.display = 'flex';
+    document.getElementById('stat-bar').classList.add('visible');
+  }
+}
+
+// ============================================================
+// RESTART
+// ============================================================
+function restartGame() {
+  synth.cancel();
+  visitedNodes = []; currentNode = null; pendingCallback = null;
+  isPaused = false; playerGold = 0; carryGold = 0;
+  activeBook = book1; currentBookId = 'dungeon';
+
+  applyTheme('dungeon');
+
+  document.getElementById('ending-screen').classList.remove('show');
+  document.getElementById('wormhole-screen').classList.remove('show');
+  showMainUI();
+  document.getElementById('stat-bar').style.display = 'none';
+  document.getElementById('stat-bar').classList.remove('visible');
+
+  document.getElementById('start-btn').style.display  = 'inline-block';
+  document.getElementById('start-btn').disabled       = false;
+  document.getElementById('replay-btn').disabled      = true;
+  document.getElementById('skip-btn').disabled        = true;
+  document.getElementById('pause-btn').disabled       = true;
+  document.getElementById('pause-btn').textContent    = '⏸ Pause';
+
+  document.getElementById('current-segment').innerHTML =
+    'Press <strong style="color:#f0c060">Begin Adventure</strong> to start your journey...';
+  document.getElementById('progress-track').innerHTML = '';
+}
+
+// Preload voices
+if (speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+}
+</script>
+</body>
+</html>
